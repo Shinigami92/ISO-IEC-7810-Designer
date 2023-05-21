@@ -35,12 +35,15 @@ public class DesignerResource {
     @Path("/example.png")
     @GET
     public Response exampleImage() throws IOException {
+        // https://myaurochs.com/blogs/news/whats-a-credit-cards-size
+        int dpi = 300;
+
         List<DesignElement> elements = new ArrayList<>();
 
         elements.add(new DesignElement() {
             {
-                x = 0.1f;
-                y = 0.2f;
+                x = 1.6f;
+                y = 1.3f;
                 fontFamily = "Arial";
                 fontSize = 0.15f;
                 text = "Jane";
@@ -49,22 +52,35 @@ public class DesignerResource {
         });
         elements.add(new DesignElement() {
             {
-                x = 0.1f;
-                y = 0.4f;
+                x = 1.6f;
+                y = 1.5f;
                 fontFamily = "Arial";
                 fontSize = 0.15f;
                 text = "Doe";
-                color = "#0000FF";
+                color = "#FF0000";
             }
         });
+
+        // https://www.passbildgroesse.de
+        String filename = "100000000000019D00000213BD56DAB0.png";
+        // 1.38 × 1.77 inch | 35 × 45 mm
+        double profileWidthInInch = 1.38;
+        double profileHeightInInch = 1.77;
+
+        // Read image from resources
+        ImagePlus profileImage = IJ.openImage("src/main/resources/" + filename);
+
+        ImageProcessor ipProfile = profileImage.getProcessor();
+
+        // resize image
+        ipProfile = ipProfile.resize(
+                (int) Math.round(profileWidthInInch * dpi),
+                (int) Math.round(profileHeightInInch * dpi));
 
         // https://en.wikipedia.org/wiki/ISO/IEC_7810
         double widthInInch = 3.370; // 85.60 mm
         double heightInInch = 2.125; // 53.98 mm
         double cornerRadiusInInch = 0.125;
-
-        // https://myaurochs.com/blogs/news/whats-a-credit-cards-size
-        int dpi = 300;
 
         int x = 0;
         int y = 0;
@@ -105,6 +121,14 @@ public class DesignerResource {
         g2d.draw(roundedRect);
         g2d.setColor(Color.WHITE);
         g2d.fill(roundedRect);
+
+        // Place profile image
+        BufferedImage bufferedImageProfile = ipProfile.getBufferedImage();
+        g2d.drawImage(
+                bufferedImageProfile,
+                Math.round(0.1f * dpi),
+                Math.round(0.1f * dpi),
+                null);
 
         for (DesignElement element : elements) {
             Font font = new Font(element.fontFamily, Font.PLAIN, Math.round(element.fontSize * dpi));
