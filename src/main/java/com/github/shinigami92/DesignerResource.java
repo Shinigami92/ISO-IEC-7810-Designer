@@ -9,6 +9,8 @@ import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.imageio.ImageIO;
 
@@ -19,14 +21,46 @@ import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.core.Response;
 
+class DesignElement {
+    public float x;
+    public float y;
+    public String fontFamily;
+    public float fontSize;
+    public String text;
+    public String color;
+}
+
 @Path("/api/v1/designer")
 public class DesignerResource {
     @Path("/example.png")
     @GET
     public Response exampleImage() throws IOException {
+        List<DesignElement> elements = new ArrayList<>();
+
+        elements.add(new DesignElement() {
+            {
+                x = 0.1f;
+                y = 0.2f;
+                fontFamily = "Arial";
+                fontSize = 0.15f;
+                text = "Jane";
+                color = "#0000FF";
+            }
+        });
+        elements.add(new DesignElement() {
+            {
+                x = 0.1f;
+                y = 0.4f;
+                fontFamily = "Arial";
+                fontSize = 0.15f;
+                text = "Doe";
+                color = "#0000FF";
+            }
+        });
+
         // https://en.wikipedia.org/wiki/ISO/IEC_7810
-        double widthInInch = 3.370;
-        double heightInInch = 2.125;
+        double widthInInch = 3.370; // 85.60 mm
+        double heightInInch = 2.125; // 53.98 mm
         double cornerRadiusInInch = 0.125;
 
         // https://myaurochs.com/blogs/news/whats-a-credit-cards-size
@@ -72,15 +106,13 @@ public class DesignerResource {
         g2d.setColor(Color.WHITE);
         g2d.fill(roundedRect);
 
-        Font fontArial = new Font("Arial", Font.PLAIN, Math.round(0.15f * dpi));
+        for (DesignElement element : elements) {
+            Font font = new Font(element.fontFamily, Font.PLAIN, Math.round(element.fontSize * dpi));
 
-        g2d.setColor(Color.BLUE);
-        g2d.setFont(fontArial);
-        g2d.drawString("Jane", Math.round(0.1 * dpi), Math.round(0.2 * dpi));
-
-        g2d.setColor(Color.BLUE);
-        g2d.setFont(fontArial);
-        g2d.drawString("Doe", Math.round(0.1 * dpi), Math.round(0.4 * dpi));
+            g2d.setColor(Color.decode(element.color));
+            g2d.setFont(font);
+            g2d.drawString(element.text, Math.round(element.x * dpi), Math.round(element.y * dpi));
+        }
 
         g2d.dispose();
 
